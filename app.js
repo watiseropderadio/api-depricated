@@ -42,11 +42,12 @@ app.get('/timeline_items', function(req, res) {
   var where = (req.query.radio_id) ? {
     radio_id: req.query.radio_id
   } : {};
+  var limit = (req.query.limit <= process.env.LIMIT_MAX && req.query.limit > 0) ? req.query.limit : 20;
 
   knex.select('on_air', 'radio_id', 'song_id')
     .from('timeline')
     .where(where)
-    .limit(20)
+    .limit(limit)
     .then(function(rows) {
       sendJson(res, 'timeline_items', rows);
     })
