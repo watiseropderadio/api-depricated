@@ -56,12 +56,8 @@ app.get('/timeline_items', function(req, res) {
 });
 
 app.listen(app.get('port'), function() {
-
   if (!app.get('database')) {
     console.error('PG_CONNECTION_STRING is not available');
-  } else {
-    console.log('PG_CONNECTION_STRING is:', app.get('database'));
   }
-
   console.log('Node app is running at localhost:' + app.get('port'));
 });
