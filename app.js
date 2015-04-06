@@ -343,12 +343,6 @@ var getTimelineItem = function(radioId, songId, timestamp) {
                 return reject(errors);
               });
             });
-
-          return createTimelineItem(radioId, songId, timestamp).then(function(item) {
-            return reject(item);
-          }, function(errors) {
-            return reject(errors);
-          });
         });
     }
 
