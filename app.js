@@ -189,6 +189,8 @@ var processSong = function(radio_id, artist_name, song_title, timestamp) {
     // console.log('song_title:', song_title);
     // console.log('timestamp:', timestamp);
 
+    // decode all parameters: html entities to utf8 node
+
     // first search for total query of artist name like "Nick & Simon"
 
     // not found? get all artists from the name, split by
