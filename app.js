@@ -338,7 +338,7 @@ var getTimelineItem = function(radioId, songId, timestamp) {
 
               // no results, create time
               return createTimelineItem(radioId, songId, timestamp).then(function(item) {
-                return reject(item);
+                return resolve(item);
               }, function(errors) {
                 return reject(errors);
               });
