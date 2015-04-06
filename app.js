@@ -115,18 +115,15 @@ var getArtist = function(artist_name) {
                     return resolve(new_artist_id);
                   })
                   .catch(function(e) {
-                    console.error(e);
                     return reject(e);
                   });
               })
               .catch(function(e) {
-                console.error(e);
                 return reject(e);
               });
           });
       })
       .catch(function(e) {
-        console.error(e);
         return reject(e);
       });
   });
@@ -224,25 +221,21 @@ var getSongId = function(artistIds, songTitle) {
                         return resolve(song_id);
                       })
                       .catch(function(e) {
-                        console.error(e);
                         return reject(e);
                       });
 
                   })
                   .catch(function(e) {
-                    console.error(e);
                     return reject(e);
                   });
               })
               .catch(function(e) {
-                console.error(e);
                 return reject(e);
               });
           });
 
       })
       .catch(function(e) {
-        console.error(e);
         return reject(e);
       });
 
@@ -268,12 +261,11 @@ var createTimelineItem = function(radioId, songId, timestamp) {
         radio_id: radioId,
         song_id: songId,
         on_air: on_air
-      }, 'id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+      }, 'id')
       .then(function(timelineItems) {
-        return resolve(timelineItems[0]);
+        return resolve(timelineItems[0].id);
       })
       .catch(function(e) {
-        console.error(e);
         return reject(e);
       });
 
@@ -289,26 +281,27 @@ var getTimelineItem = function(radioId, songId, timestamp) {
 
     if (validTimestamp) {
       knex('timeline_items')
-        .select('song_id')
+        .select('id')
         .where({
           radio_id: radioId,
           song_id: songId,
           on_air: timestamp
         })
         .then(function(timelineItems) {
-          if (timelineItems.length === 0) {
-            return createTimelineItem(radioId, songId, timestamp).then(function(item) {
-              return reject(item);
-            }, function(errors) {
-              return reject(errors);
-            });
+          if (timelineItems.length > 0) {
+            return resolve(timelineItems[0].id);
           }
+          return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
+            return reject(itemId);
+          }, function(errors) {
+            return reject(errors);
+          });
         });
     } else {
 
       // try to find the song in the last 60 minutes
       knex('timeline_items')
-        .select('id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+        .select('id')
         .where({
           radio_id: radioId,
           song_id: songId
@@ -317,12 +310,12 @@ var getTimelineItem = function(radioId, songId, timestamp) {
         .limit(1)
         .then(function(timelineItems) {
           if (timelineItems.length > 0) {
-            return resolve(timelineItems[0]);
+            return resolve(timelineItems[0].id);
           }
 
           // try to find the song in the last 20 songs of the radio station
           knex('timeline_items')
-            .select('id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+            .select('id', 'song_id')
             .where({
               radio_id: radioId
             })
@@ -332,13 +325,13 @@ var getTimelineItem = function(radioId, songId, timestamp) {
               var i;
               for (i = 0; i < timelineItems.length; i++) {
                 if (timelineItems[i].song_id === songId) {
-                  return resolve(timelineItems[i]);
+                  return resolve(timelineItems[i].id);
                 }
               }
 
               // no results, create time
-              return createTimelineItem(radioId, songId, timestamp).then(function(item) {
-                return resolve(item);
+              return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
+                return resolve(itemId);
               }, function(errors) {
                 return reject(errors);
               });
@@ -373,11 +366,9 @@ var processSong = function(radioId, artistName, songTitle, timestamp) {
           return resolve(timeline_item);
 
         }, function(errors) {
-          console.error('createTimelineItem() failed');
           return reject(errors);
         });
       }, function(errors) {
-        console.error('getSongTitle() failed');
         return reject(errors);
       });
 
@@ -411,7 +402,7 @@ app.get('/timeline_items', function(req, res) {
       sendJson(res, 'timeline_items', rows);
     })
     .catch(function(e) {
-      console.error(e);
+      sendJson(res, 'errors', e);
     });
 });
 
@@ -445,7 +436,7 @@ app.post('/timeline_items', function(req, res) {
 
   processSong(timeline_item.radio_id, timeline_item.artist_name, timeline_item.song_title, timestamp).then(function(timeline_item) {
 
-    return sendJson(res, 'timeline_item', timeline_item);
+    return sendJson(res, 'timeline_items', timeline_item);
 
   }, function(errors) {
 
