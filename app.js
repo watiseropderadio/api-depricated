@@ -1,3 +1,6 @@
+/*jslint white: true, unparam: true */
+"use strict";
+
 var pg = require('pg');
 var express = require('express');
 var app = express();
@@ -24,6 +27,12 @@ app.use(function(req, res, next) {
   next();
 });
 
+var knex = require('knex')({
+  client: 'pg',
+  connection: app.get('database'),
+  debug: app.get('debug')
+});
+
 function sendJson(res, rootName, object) {
   var json = {};
   if (typeof object === 'object' && Object.keys(object).length) {
@@ -37,11 +46,257 @@ function sendJson(res, rootName, object) {
   res.send(JSON.stringify(json));
 }
 
-var knex = require('knex')({
-  client: 'pg',
-  connection: app.get('database'),
-  debug: app.get('debug')
-});
+Array.prototype.hasSameValues = function(array) {
+  // if the other array is a falsy value, return
+  if (!array) {
+    return false;
+  }
+
+  // compare lengths - can save a lot of time
+  if (this.length !== array.length) {
+    return false;
+  }
+
+  var i, j;
+  for (i = 0; i < this.length; i++) {
+    for (j = 0; j < array.length; j++) {
+      if (this.indexOf(array[j]) < 0 || array.indexOf(this[i]) < 0) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+var getArtist = function(artist_name) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    artist_name = artist_name.trim();
+
+    knex('artist_names')
+      .select('id', 'artist_id')
+      .where({
+        name: artist_name
+      })
+      .limit(1)
+      .then(function(rows) {
+        if (rows.length === 1) {
+          return resolve(rows[0].artist_id);
+        }
+        knex('artist_names')
+          .insert({
+            artist_id: 0,
+            name: artist_name
+          }, 'id')
+          .then(function(artist_name_ids) {
+
+            // create artist and update artist_names record
+            var artist_name_id = artist_name_ids[0];
+            knex('artists')
+              .insert({
+                default_name_id: artist_name_id
+              }, 'id')
+              .then(function(artist_ids) {
+
+                var new_artist_id = artist_ids[0];
+                knex('artist_names')
+                  .update({
+                    artist_id: new_artist_id
+                  })
+                  .where({
+                    id: artist_name_id
+                  })
+                  .then(function() {
+                    return resolve(new_artist_id);
+                  })
+                  .catch(function(e) {
+                    console.error(e);
+                    return reject(e);
+                  });
+              })
+              .catch(function(e) {
+                console.error(e);
+                return reject(e);
+              });
+          });
+      })
+      .catch(function(e) {
+        console.error(e);
+        return reject(e);
+      });
+  });
+
+};
+
+var getArtists = function(artistNames) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    // split artists in multiple artists if needed
+    var artistNamesList = artistNames.split(/feat\.| feat |featuring | & |, /i);
+
+    var promises = artistNamesList.map(function(artistName) {
+      return getArtist(artistName);
+    });
+
+    RSVP.all(promises).then(function(artistIds) {
+      return resolve(artistIds);
+    }).catch(function(errors) {
+      return reject(errors);
+    });
+
+  });
+
+};
+
+var getSongId = function(artistIds, songTitle) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    songTitle = songTitle.trim();
+
+    knex('song_titles')
+      .select('artists_songs.artist_id', 'artists_songs.song_id')
+      .innerJoin('songs', 'songs.id', 'song_titles.song_id')
+      .innerJoin('artists_songs', 'artists_songs.song_id', 'songs.id')
+      .where({
+        title: songTitle
+      })
+      .then(function(foundArtistsResult) {
+
+        var foundArtistsIds = [];
+        var songId;
+        var i;
+
+        for (i = 0; i < foundArtistsResult.length; i++) {
+          songId = foundArtistsResult[i].song_id;
+          foundArtistsIds.push(foundArtistsResult[i].artist_id);
+        }
+
+        if (_.unique(artistIds).hasSameValues(_.unique(foundArtistsIds))) {
+          return resolve(songId);
+        }
+
+        // create song title, create song, link to artistIds
+        knex('song_titles')
+          .insert({
+            song_id: 0,
+            title: songTitle
+          }, 'id')
+          .then(function(song_title_ids) {
+
+            // create song and update song_title record
+            var song_title_id = song_title_ids[0];
+            knex('songs')
+              .insert({
+                default_title_id: song_title_id
+              }, 'id')
+              .then(function(song_ids) {
+
+                var song_id = song_ids[0];
+                knex('song_titles')
+                  .update({
+                    song_id: song_id
+                  })
+                  .where({
+                    id: song_title_id
+                  })
+                  .then(function() {
+
+                    // link artist to the song
+                    var insertArray = [];
+                    var insertObject = {};
+                    for (i = 0; i < artistIds.length; i++) {
+                      insertObject = {};
+                      insertObject.artist_id = artistIds[i];
+                      insertObject.song_id = song_id;
+                      insertObject.artist_order = i;
+                      insertArray.push(insertObject);
+                    }
+
+                    knex('artists_songs').insert(insertArray)
+                      .then(function() {
+                        return resolve(song_id);
+                      })
+                      .catch(function(e) {
+                        console.error(e);
+                        return reject(e);
+                      });
+
+                  })
+                  .catch(function(e) {
+                    console.error(e);
+                    return reject(e);
+                  });
+              })
+              .catch(function(e) {
+                console.error(e);
+                return reject(e);
+              });
+          });
+
+      })
+      .catch(function(e) {
+        console.error(e);
+        return reject(e);
+      });
+
+  });
+
+};
+
+var createTimelineItem = function(radio_id, songId, timestamp) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    return reject();
+
+  });
+
+};
+
+var processSong = function(radio_id, artist_name, song_title, timestamp) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    // decode multiple times so there will be no encoding
+    artist_name = decode(decode(decode(artist_name)));
+    song_title = decode(decode(decode(song_title)));
+
+    console.log('radio_id:', radio_id, '| artist_name:', artist_name, '| song_title:', song_title, '| timestamp:', timestamp);
+
+    getArtists(artist_name).then(function(artistIds) {
+
+      getSongId(artistIds, song_title).then(function(songId) {
+
+        // with the song_id we can insert an item in the timeline
+        console.log('songId:', songId);
+
+        createTimelineItem(radio_id, songId, timestamp).then(function(timeline_item) {
+
+          console.log('timeline_item:', timeline_item);
+          console.log('createTimelineItem() SUCCEEDED!!!');
+
+          // timeline item is created, lets return it with resolve
+          return resolve(timeline_item);
+
+        }, function(errors) {
+          console.error('createTimelineItem() failed');
+          return reject(errors);
+        });
+      }, function(errors) {
+        console.error('getSongTitle() failed');
+        return reject(errors);
+      });
+
+    }, function(errors) {
+      return reject(errors);
+    });
+
+  });
+
+};
 
 app.get('/', function(req, res) {
   res.send(JSON.stringify({
@@ -92,7 +347,7 @@ app.post('/timeline_items', function(req, res) {
     return sendJson(res, 'errors', {
       required_fields: required,
       invalid_fields: invalid
-    })
+    });
   }
 
   var timestamp = timeline_item.timestamp || null;
@@ -118,243 +373,3 @@ app.listen(app.get('port'), function() {
   console.log('Node app is running at localhost:' + app.get('port'));
 
 });
-
-Array.prototype.hasSameValues = function(array) {
-  // if the other array is a falsy value, return
-  if (!array)
-    return false;
-
-  // compare lengths - can save a lot of time
-  if (this.length != array.length)
-    return false;
-
-  for (var i = 0; i < this.length; i++) {
-    for (var j = 0; j < array.length; j++) {
-      if (this.indexOf(array[j]) < 0 || array.indexOf(this[i]) < 0) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-var getArtist = function(artist_name) {
-
-  return new RSVP.Promise(function(resolve, reject) {
-
-    artist_name = artist_name.trim();
-
-    debug = app.get('debug');
-
-    knex('artist_names')
-      .select('id', 'artist_id')
-      .where({
-        name: artist_name
-      })
-      .limit(1)
-      .then(function(rows) {
-        if (rows.length === 1) {
-          return resolve(rows[0].artist_id);
-        } else {
-          knex('artist_names')
-            .insert({
-              artist_id: 0,
-              name: artist_name
-            }, 'id')
-            .then(function(artist_name_ids) {
-
-              // create artist and update artist_names record
-              var artist_name_id = artist_name_ids[0];
-              knex('artists')
-                .insert({
-                  default_name_id: artist_name_id
-                }, 'id')
-                .then(function(artist_ids) {
-
-                  var new_artist_id = artist_ids[0];
-                  knex('artist_names')
-                    .update({
-                      artist_id: new_artist_id
-                    })
-                    .where({
-                      id: artist_name_id
-                    })
-                    .then(function() {
-                      return resolve(new_artist_id);
-                    })
-                    .catch(function(e) {
-                      console.error(e);
-                      return reject(e);
-                    });
-                })
-                .catch(function(e) {
-                  console.error(e);
-                  return reject(e);
-                });
-            });
-        }
-      })
-      .catch(function(e) {
-        console.error(e);
-        return reject(e);
-      });
-  });
-
-};
-
-var getArtists = function(artistNames) {
-
-  return new RSVP.Promise(function(resolve, reject) {
-
-    // split artists in multiple artists if needed
-    artistNamesList = artistNames.split(/feat\.| feat |featuring | & |, /i);
-
-    var promises = artistNamesList.map(function(artistName) {
-      return getArtist(artistName);
-    });
-
-    RSVP.all(promises).then(function(artistIds) {
-      return resolve(artistIds);
-    }).catch(function(errors) {
-      return reject(errors);
-    });
-
-  });
-
-};
-
-var getSongId = function(artistIds, songTitle) {
-
-  return new RSVP.Promise(function(resolve, reject) {
-
-    songTitle = songTitle.trim();
-
-    knex('song_titles')
-      .select('artists_songs.artist_id', 'artists_songs.song_id')
-      .innerJoin('songs', 'songs.id', 'song_titles.song_id')
-      .innerJoin('artists_songs', 'artists_songs.song_id', 'songs.id')
-      .where({
-        title: songTitle
-      })
-      .then(function(foundArtistsResult) {
-
-        var foundArtistsIds = [];
-        var songId;
-        for (var i = 0; i < foundArtistsResult.length; i++) {
-          songId = foundArtistsResult[i].song_id;
-          foundArtistsIds.push(foundArtistsResult[i].artist_id);
-        };
-
-        if (_.unique(artistIds).hasSameValues(_.unique(foundArtistsIds))) {
-          return resolve(songId);
-        } else {
-
-          // create song title, create song, link to artistIds
-          knex('song_titles')
-            .insert({
-              song_id: 0,
-              title: songTitle
-            }, 'id')
-            .then(function(song_title_ids) {
-
-              // create song and update song_title record
-              var song_title_id = song_title_ids[0];
-              knex('songs')
-                .insert({
-                  default_title_id: song_title_id
-                }, 'id')
-                .then(function(song_ids) {
-
-                  var song_id = song_ids[0];
-                  knex('song_titles')
-                    .update({
-                      song_id: song_id
-                    })
-                    .where({
-                      id: song_title_id
-                    })
-                    .then(function() {
-
-                      // link artist to the song
-                      var insertArray = [];
-                      for (var i = 0; i < artistIds.length; i++) {
-                        var insertObject = {};
-                        insertObject.artist_id = artistIds[i];
-                        insertObject.song_id = song_id;
-                        insertObject.artist_order = i;
-                        insertArray.push(insertObject);
-                      };
-
-                      knex('artists_songs').insert(insertArray)
-                        .then(function() {
-                          return resolve(song_id);
-                        })
-                        .catch(function(e) {
-                          console.error(e);
-                          return reject(e);
-                        });
-
-                    })
-                    .catch(function(e) {
-                      console.error(e);
-                      return reject(e);
-                    });
-                })
-                .catch(function(e) {
-                  console.error(e);
-                  return reject(e);
-                });
-            });
-
-        }
-      })
-      .catch(function(e) {
-        console.error(e);
-        return reject(e);
-      });
-
-  });
-
-};
-
-var processSong = function(radio_id, artist_name, song_title, timestamp) {
-
-  return new RSVP.Promise(function(resolve, reject) {
-
-    // decode multiple times so there will be no encoding
-    artist_name = decode(decode(decode(artist_name)));
-    song_title = decode(decode(decode(song_title)));
-
-    console.log('radio_id:', radio_id, '| artist_name:', artist_name, '| song_title:', song_title, '| timestamp:', timestamp);
-
-    getArtists(artist_name).then(function(artistIds) {
-      console.log('==> artist_ids: ', artistIds)
-
-      getSongId(artistIds, song_title).then(function(songId) {
-
-        // with the song_id we can insert an item in the timeline
-        console.log('songId:', songId);
-
-        createTimelineItem(radio_id, song_id, timestamp).then(function(timeline_item) {
-
-          // timeline item is created, lets return it with resolve
-          return resolve(timeline_item);
-          console.log('timeline_item:', timeline_item);
-          console.log('createTimelineItem() SUCCEEDED!!!');
-
-        }, function(errors) {
-          console.error('createTimelineItem() failed')
-          return reject(errors);
-        });
-      }, function(errors) {
-        console.error('getSongTitle() failed')
-        return reject(errors);
-      });
-
-    }, function(errors) {
-      return reject(errors);
-    });
-
-  });
-
-};
