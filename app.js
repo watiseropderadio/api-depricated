@@ -1,4 +1,5 @@
 /*jslint white: true, unparam: true */
+
 "use strict";
 
 var pg = require('pg');
@@ -10,7 +11,7 @@ var _ = require('lodash');
 var decode = require('ent/decode');
 
 app.set('database', (process.env.PG_CONNECTION_STRING || false));
-app.set('debug', (process.env.DEBUG || false));
+app.set('debug', (process.env.DEBUG === 'true' || process.env.DEBUG === true) ? true : false);
 app.set('port', (process.env.PORT || 5000));
 
 app.use(express.static(__dirname + '/public'));
@@ -30,7 +31,8 @@ app.use(function(req, res, next) {
 var knex = require('knex')({
   client: 'pg',
   connection: app.get('database'),
-  debug: app.get('debug')
+  debug: app.get('debug'),
+  timezone: 'UTC'
 });
 
 function sendJson(res, rootName, object) {
@@ -39,6 +41,8 @@ function sendJson(res, rootName, object) {
     json[rootName] = object;
   } else if (typeof object === 'boolean') {
     json[rootName] = object;
+  } else if (typeof object === 'string') {
+    json[rootName] = [object];
   } else {
     res.status(404);
     json[rootName] = [];
@@ -246,37 +250,130 @@ var getSongId = function(artistIds, songTitle) {
 
 };
 
-var createTimelineItem = function(radio_id, songId, timestamp) {
+var createTimelineItem = function(radioId, songId, timestamp) {
 
   return new RSVP.Promise(function(resolve, reject) {
 
-    return reject();
+    var validTimestamp = (new Date(timestamp)).getTime() > 0;
+
+    var on_air;
+    if (validTimestamp) {
+      on_air = timestamp;
+    } else {
+      on_air = new Date();
+    }
+
+    knex('timeline_items')
+      .insert({
+        radio_id: radioId,
+        song_id: songId,
+        on_air: on_air
+      }, 'id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+      .then(function(timelineItems) {
+        return resolve(timelineItems[0]);
+      })
+      .catch(function(e) {
+        console.error(e);
+        return reject(e);
+      });
 
   });
 
 };
 
-var processSong = function(radio_id, artist_name, song_title, timestamp) {
+var getTimelineItem = function(radioId, songId, timestamp) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    var validTimestamp = (new Date(timestamp)).getTime() > 0;
+
+    if (validTimestamp) {
+      knex('timeline_items')
+        .select('song_id')
+        .where({
+          radio_id: radioId,
+          song_id: songId,
+          on_air: timestamp
+        })
+        .then(function(timelineItems) {
+          if (timelineItems.length === 0) {
+            return createTimelineItem(radioId, songId, timestamp).then(function(item) {
+              return reject(item);
+            }, function(errors) {
+              return reject(errors);
+            });
+          }
+        });
+    } else {
+
+      // try to find the song in the last 60 minutes
+      knex('timeline_items')
+        .select('id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+        .where({
+          radio_id: radioId,
+          song_id: songId
+        })
+        .andWhereRaw("on_air > now()::date - interval '1h'")
+        .limit(1)
+        .then(function(timelineItems) {
+          if (timelineItems.length > 0) {
+            return resolve(timelineItems[0]);
+          }
+
+          // try to find the song in the last 20 songs of the radio station
+          knex('timeline_items')
+            .select('id', 'radio_id', 'song_id', 'recording_id', 'on_air')
+            .where({
+              radio_id: radioId
+            })
+            .limit(20)
+            .then(function(timelineItems) {
+
+              var i;
+              for (i = 0; i < timelineItems.length; i++) {
+                if (timelineItems[i].song_id === songId) {
+                  return resolve(timelineItems[i]);
+                }
+              }
+
+              // no results, create time
+              return createTimelineItem(radioId, songId, timestamp).then(function(item) {
+                return reject(item);
+              }, function(errors) {
+                return reject(errors);
+              });
+            });
+
+          return createTimelineItem(radioId, songId, timestamp).then(function(item) {
+            return reject(item);
+          }, function(errors) {
+            return reject(errors);
+          });
+        });
+    }
+
+  });
+
+};
+
+var processSong = function(radioId, artistName, songTitle, timestamp) {
 
   return new RSVP.Promise(function(resolve, reject) {
 
     // decode multiple times so there will be no encoding
-    artist_name = decode(decode(decode(artist_name)));
-    song_title = decode(decode(decode(song_title)));
+    artistName = decode(decode(decode(artistName)));
+    songTitle = decode(decode(decode(songTitle)));
 
-    console.log('radio_id:', radio_id, '| artist_name:', artist_name, '| song_title:', song_title, '| timestamp:', timestamp);
+    if (app.get('debug')) {
+      console.log('radioId:', radioId, '| artistName:', artistName, '| songTitle:', songTitle, '| timestamp:', timestamp);
+    }
 
-    getArtists(artist_name).then(function(artistIds) {
+    getArtists(artistName).then(function(artistIds) {
 
-      getSongId(artistIds, song_title).then(function(songId) {
+      getSongId(artistIds, songTitle).then(function(songId) {
 
         // with the song_id we can insert an item in the timeline
-        console.log('songId:', songId);
-
-        createTimelineItem(radio_id, songId, timestamp).then(function(timeline_item) {
-
-          console.log('timeline_item:', timeline_item);
-          console.log('createTimelineItem() SUCCEEDED!!!');
+        getTimelineItem(radioId, songId, timestamp).then(function(timeline_item) {
 
           // timeline item is created, lets return it with resolve
           return resolve(timeline_item);
