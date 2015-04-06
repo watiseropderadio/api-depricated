@@ -40,7 +40,7 @@ update_updated_at_column();
 CREATE TABLE song_titles (
   id BIGSERIAL PRIMARY key,
   song_id INT NOT NULL,
-  title TEXT NOT NULL,
+  title CITEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -67,7 +67,7 @@ update_updated_at_column();
 CREATE TABLE artist_names (
   id BIGSERIAL PRIMARY key,
   artist_id INT NOT NULL,
-  name TEXT NOT NULL,
+  name CITEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -82,6 +82,7 @@ CREATE TABLE artists_songs (
   id BIGSERIAL PRIMARY key,
   artist_id INT NOT NULL,
   song_id INT NOT NULL,
+  artist_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -94,7 +95,7 @@ update_updated_at_column();
 -- add table recordings
 CREATE TABLE recordings (
   id BIGSERIAL PRIMARY key,
-  url TEXT NOT NULL,
+  url CITEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
