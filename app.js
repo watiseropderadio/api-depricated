@@ -320,6 +320,18 @@ var getTimelineItem = function(radioId, songId, timestamp) {
 
 };
 
+function allCaps(word) {
+  var containsUpper = /[A-Z]/.test(word);
+  var containsLower = /[a-z]/.test(word);
+  return containsUpper && !containsLower;
+}
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function(txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
 var processSong = function(radioId, artistName, songTitle, timestamp) {
 
   return new RSVP.Promise(function(resolve, reject) {
@@ -328,6 +340,11 @@ var processSong = function(radioId, artistName, songTitle, timestamp) {
     artistName = decode(decode(decode(artistName)));
     songTitle = decode(decode(decode(songTitle)));
 
+    // if there are only capitals, make it title case
+    artistName = (allCaps(artistName)) ? toTitleCase(artistName) : artistName;
+    songTitle = (allCaps(songTitle)) ? toTitleCase(songTitle) : songTitle;
+
+    // show some debugging
     if (app.get('debug')) {
       console.log('radioId:', radioId, '| artistName:', artistName, '| songTitle:', songTitle, '| timestamp:', timestamp);
     }
