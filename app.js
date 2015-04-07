@@ -292,7 +292,7 @@ var getTimelineItem = function(radioId, songId, timestamp) {
             return resolve(timelineItems[0].id);
           }
           return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
-            return reject(itemId);
+            return resolve(itemId);
           }, function(errors) {
             return reject(errors);
           });
