@@ -277,68 +277,45 @@ var getTimelineItem = function(radioId, songId, timestamp) {
 
   return new RSVP.Promise(function(resolve, reject) {
 
-    var validTimestamp = (new Date(timestamp)).getTime() > 0;
+    // try to find the song in the last 60 minutes
+    knex('timeline_items')
+      .select('id')
+      .where({
+        radio_id: radioId,
+        song_id: songId
+      })
+      .andWhereRaw("on_air > now()::date - interval '1h'")
+      .limit(1)
+      .then(function(timelineItems) {
 
-    if (validTimestamp) {
-      knex('timeline_items')
-        .select('id')
-        .where({
-          radio_id: radioId,
-          song_id: songId,
-          on_air: timestamp
-        })
-        .then(function(timelineItems) {
-          if (timelineItems.length > 0) {
-            return resolve(timelineItems[0].id);
-          }
-          return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
-            return resolve(itemId);
-          }, function(errors) {
-            return reject(errors);
-          });
-        });
-    } else {
+        if (timelineItems.length > 0) {
+          return resolve(timelineItems[0].id);
+        }
 
-      // try to find the song in the last 60 minutes
-      knex('timeline_items')
-        .select('id')
-        .where({
-          radio_id: radioId,
-          song_id: songId
-        })
-        .andWhereRaw("on_air > now()::date - interval '1h'")
-        .limit(1)
-        .then(function(timelineItems) {
-          if (timelineItems.length > 0) {
-            return resolve(timelineItems[0].id);
-          }
+        // try to find the song in the last 20 songs of the radio station
+        knex('timeline_items')
+          .select('id', 'song_id')
+          .where({
+            radio_id: radioId
+          })
+          .limit(20)
+          .then(function(timelineItems) {
 
-          // try to find the song in the last 20 songs of the radio station
-          knex('timeline_items')
-            .select('id', 'song_id')
-            .where({
-              radio_id: radioId
-            })
-            .limit(20)
-            .then(function(timelineItems) {
-
-              var i;
-              for (i = 0; i < timelineItems.length; i++) {
-                if (timelineItems[i].song_id === songId) {
-                  return resolve(timelineItems[i].id);
-                }
+            var i;
+            for (i = 0; i < timelineItems.length; i++) {
+              if (timelineItems[i].song_id === songId) {
+                return resolve(timelineItems[i].id);
               }
+            }
 
-              // no results, create time
-              return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
-                return resolve(itemId);
-              }, function(errors) {
-                return reject(errors);
-              });
+            // no results, create time
+            return createTimelineItem(radioId, songId, timestamp).then(function(itemId) {
+              return resolve(itemId);
+            }, function(errors) {
+              return reject(errors);
             });
-        });
-    }
-
+          });
+      });
   });
 
 };
