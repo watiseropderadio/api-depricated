@@ -457,10 +457,12 @@ app.post('/timeline_items', function(req, res) {
 
   processSong(timeline_item.radio_id, timeline_item.artist_name, timeline_item.song_title, timestamp).then(function(timeline_item) {
 
-    return sendJson(res, 'timeline_items', timeline_item);
+    return sendJson(res, 'timeline_item', timeline_item);
 
   }, function(errors) {
-
+    if (!_.isArray(errors)) {
+      errors = [errors];
+    }
     return sendJson(res, 'errors', errors);
 
   });
