@@ -481,6 +481,25 @@ app.get('/timeline_items', function(req, res) {
 
 app.post('/timeline_items', function(req, res) {
 
+  // check for api key in .env
+  if (_.isUndefined(process.env.API_KEY)) {
+    return sendJson(res, 'errors', {
+      required: 'API_KEY is not set in your .env'
+    });
+  }
+
+  // check if the api key is valid
+  if (req.body.api_key !== process.env.API_KEY || _.isUndefined(process.env.API_KEY)) {
+    if (_.isUndefined(req.body.api_key)) {
+      return sendJson(res, 'errors', {
+        required: 'api_key is not found, it should be namespaced with timeline_item'
+      });
+    }
+    return sendJson(res, 'errors', {
+      invalid: 'api_key is found but it it not valid'
+    });
+  }
+
   var required = [];
   var invalid = [];
   var timeline_item = req.body.timeline_item;
