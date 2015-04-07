@@ -263,7 +263,7 @@ var createTimelineItem = function(radioId, songId, timestamp) {
         on_air: on_air
       }, 'id')
       .then(function(timelineItems) {
-        return resolve(timelineItems[0].id);
+        return resolve(timelineItems[0]);
       })
       .catch(function(e) {
         return reject(e);
