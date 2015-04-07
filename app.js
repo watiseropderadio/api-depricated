@@ -401,6 +401,31 @@ var processSong = function(radioId, artistName, songTitle, timestamp) {
 
 };
 
+var getArtistsBySongId = function(timelineItem) {
+
+  return new RSVP.Promise(function(resolve, reject) {
+
+    var songId = timelineItem.song_id;
+
+    knex('artists_songs')
+      .select('artist_names.id', 'artist_names.name', 'artist_order as order')
+      .innerJoin('artists', 'artists.id', 'artists_songs.artist_id')
+      .innerJoin('artist_names', 'artist_names.id', 'artists.default_name_id')
+      .where({
+        song_id: songId
+      })
+      .then(function(artists) {
+        timelineItem.artists = artists;
+        return resolve(timelineItem);
+      })
+      .catch(function(e) {
+        return reject(e);
+      });
+
+  });
+
+};
+
 app.get('/', function(req, res) {
   res.send(JSON.stringify({
     author: 'Adriaan van Rossum',
@@ -416,11 +441,38 @@ app.get('/timeline_items', function(req, res) {
   } : {};
   var limit = (req.query.limit <= process.env.LIMIT_MAX && req.query.limit > 0) ? req.query.limit : 20;
 
-  knex('timeline_items').select('on_air', 'radio_id', 'song_id')
+  knex('timeline_items')
+    .select('radio_id', 'timeline_items.song_id', 'song_titles.title', 'on_air')
+    .innerJoin('songs', 'songs.id', 'timeline_items.song_id')
+    .innerJoin('song_titles', 'song_titles.song_id', 'songs.id')
     .where(where)
     .limit(limit)
-    .then(function(rows) {
-      sendJson(res, 'timeline_items', rows);
+    .then(function(timelineItems) {
+
+      if (timelineItems.length === 0) {
+        return sendJson(res, 'timeline_items', []);
+      }
+
+      var promises = timelineItems.map(function(timelineItem) {
+        return getArtistsBySongId(timelineItem);
+      });
+
+      new RSVP.Promise(function(resolve, reject) {
+        RSVP
+          .all(promises)
+          .then(function(timelineItems) {
+            return resolve(timelineItems);
+          })
+          .catch(function(errors) {
+            return reject(errors);
+          });
+      })
+        .then(function(timelineItems) {
+          return sendJson(res, 'timeline_items', timelineItems);
+        }, function(errors) {
+          return sendJson(res, 'errors', errors);
+        });
+
     })
     .catch(function(e) {
       sendJson(res, 'errors', e);
