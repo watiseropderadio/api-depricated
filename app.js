@@ -135,7 +135,7 @@ var getArtists = function(artistNames) {
   return new RSVP.Promise(function(resolve, reject) {
 
     // split artists in multiple artists if needed
-    var artistNamesList = artistNames.split(/feat\.| feat |featuring | & |, /i);
+    var artistNamesList = artistNames.split(/feat\.| feat | ft\. | ft |featuring\. |featuring | & |, /i);
 
     var promises = artistNamesList.map(function(artistName) {
       return getArtist(artistName);
