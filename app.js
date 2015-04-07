@@ -446,6 +446,7 @@ app.get('/timeline_items', function(req, res) {
     .innerJoin('songs', 'songs.id', 'timeline_items.song_id')
     .innerJoin('song_titles', 'song_titles.song_id', 'songs.id')
     .where(where)
+    .orderBy('on_air', 'desc')
     .limit(limit)
     .then(function(timelineItems) {
 
