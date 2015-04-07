@@ -357,24 +357,45 @@ var processSong = function(radioId, artistName, songTitle, timestamp) {
 
     getArtists(artistName).then(function(artistIds) {
 
-      getSongId(artistIds, songTitle).then(function(songId) {
+        getSongId(artistIds, songTitle).then(function(songId) {
 
-        // with the song_id we can insert an item in the timeline
-        getTimelineItem(radioId, songId, timestamp).then(function(timeline_item) {
+            // with the song_id we can insert an item in the timeline
+            getTimelineItem(radioId, songId, timestamp).then(function(timelineItemId) {
 
-          // timeline item is created, lets return it with resolve
-          return resolve(timeline_item);
+                if (app.get('debug')) {
+                  knex('timeline_items')
+                    .select('*')
+                    .where({
+                      id: timelineItemId
+                    })
+                    .limit(1)
+                    .then(function(timelineItems) {
+                      return resolve(timelineItems[0]);
+                    })
+                    .catch(function(e) {
+                      return reject(e);
+                    });
+                } else {
 
-        }, function(errors) {
-          return reject(errors);
-        });
-      }, function(errors) {
+                  // timeline item is created, lets return it with resolve
+                  return resolve({
+                    id: timelineItemId
+                  });
+                }
+
+              },
+              function(errors) {
+                return reject(errors);
+              });
+          },
+          function(errors) {
+            return reject(errors);
+          });
+
+      },
+      function(errors) {
         return reject(errors);
       });
-
-    }, function(errors) {
-      return reject(errors);
-    });
 
   });
 
