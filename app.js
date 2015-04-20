@@ -1,6 +1,6 @@
 /*jslint white: true, unparam: true */
 
-"use strict";
+'use strict';
 
 var pg = require('pg');
 var express = require('express');
