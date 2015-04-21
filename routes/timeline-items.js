@@ -19,28 +19,6 @@ function sendJson(res, rootName, object) {
   res.send(JSON.stringify(json));
 }
 
-Array.prototype.hasSameValues = function(array) {
-  // if the other array is a falsy value, return
-  if (!array) {
-    return false;
-  }
-
-  // compare lengths - can save a lot of time
-  if (this.length !== array.length) {
-    return false;
-  }
-
-  var i, j;
-  for (i = 0; i < this.length; i++) {
-    for (j = 0; j < array.length; j++) {
-      if (this.indexOf(array[j]) < 0 || array.indexOf(this[i]) < 0) {
-        return false;
-      }
-    }
-  }
-  return true;
-};
-
 var getArtist = function(knex, artist_name) {
 
   return new RSVP.Promise(function(resolve, reject) {
