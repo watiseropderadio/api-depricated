@@ -140,6 +140,9 @@ var getSongId = function(knex, artistIds, songTitle) {
       .orderBy('song_titles.song_id', 'asc')
       .then(function(foundArtistsResult) {
 
+        // TODO: we can check if all the artistIds are in the array of artist_ids
+        // now we just return the first row
+
         if (foundArtistsResult.length > 0) {
           return resolve(foundArtistsResult[0].song_id);
         }
