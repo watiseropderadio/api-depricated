@@ -128,25 +128,20 @@ var getSongId = function(knex, artistIds, songTitle) {
     songTitle = songTitle.trim();
 
     knex('song_titles')
-      .select('artists_songs.artist_id', 'artists_songs.song_id')
+      .select(knex.raw('"song_titles"."song_id", ARRAY_TO_JSON(ARRAY_AGG("artists_songs"."artist_id")) AS "artist_ids"'))
       .innerJoin('songs', 'songs.id', 'song_titles.song_id')
       .innerJoin('artists_songs', 'artists_songs.song_id', 'songs.id')
-      .where({
+      .whereIn('artist_id', artistIds)
+      .andWhere({
         title: songTitle
       })
+      .groupBy('song_titles.song_id')
+      .havingRaw('COUNT("artists_songs"."artist_id") = ?', artistIds.length)
+      .orderBy('song_titles.song_id', 'asc')
       .then(function(foundArtistsResult) {
 
-        var foundArtistsIds = [];
-        var songId;
-        var i;
-
-        for (i = 0; i < foundArtistsResult.length; i++) {
-          songId = foundArtistsResult[i].song_id;
-          foundArtistsIds.push(foundArtistsResult[i].artist_id);
-        }
-
-        if (_.unique(artistIds).hasSameValues(_.unique(foundArtistsIds))) {
-          return resolve(songId);
+        if (foundArtistsResult.length > 0) {
+          return resolve(foundArtistsResult[0].song_id);
         }
 
         // create song title, create song, link to artistIds
@@ -268,6 +263,7 @@ var getTimelineItem = function(knex, radioId, songId, timestamp) {
           .where({
             radio_id: radioId
           })
+          .orderBy('created_at', 'desc')
           .limit(20)
           .then(function(timelineItems) {
 
@@ -394,7 +390,7 @@ exports.list = function(req, res) {
   var limit = (req.query.limit <= process.env.LIMIT_MAX && req.query.limit > 0) ? req.query.limit : 20;
 
   knex('timeline_items')
-    .select('radio_id', 'timeline_items.song_id', 'song_titles.title', 'on_air')
+    .select('timeline_items.id', 'timeline_items.radio_id', 'timeline_items.song_id', 'song_titles.title', 'on_air')
     .innerJoin('songs', 'songs.id', 'timeline_items.song_id')
     .innerJoin('song_titles', 'song_titles.song_id', 'songs.id')
     .where(where)
