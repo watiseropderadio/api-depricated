@@ -2,7 +2,11 @@
   "name": "api",
   "version": "0.0.1",
   "description": "API for watiseropderadio",
-  "main": "dibimon.js",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/watiseropderadio/api"
+  },
   "private": true,
   "scripts": {
     "start": "node app.js"
