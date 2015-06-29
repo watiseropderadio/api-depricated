@@ -104,3 +104,33 @@ CREATE TABLE recordings (
 CREATE TRIGGER update_recordings_updated_at BEFORE UPDATE
 ON recordings FOR EACH ROW EXECUTE PROCEDURE
 update_updated_at_column();
+
+-- add table users
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY key,
+  name CITEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- place trigger on users
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE
+ON users FOR EACH ROW EXECUTE PROCEDURE
+update_updated_at_column();
+
+-- add table users_identities
+CREATE TABLE users_identities (
+  id BIGSERIAL PRIMARY key,
+  user_id INT NOT NULL,
+  provider CITEXT NOT NULL,
+  email CITEXT NULL,
+  password CITEXT NULL,
+  token CITEXT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- place trigger on users_identities
+CREATE TRIGGER update_users_identities_updated_at BEFORE UPDATE
+ON users_identities FOR EACH ROW EXECUTE PROCEDURE
+update_updated_at_column();
