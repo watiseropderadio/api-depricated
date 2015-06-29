@@ -2,15 +2,10 @@
   "name": "api",
   "version": "0.0.1",
   "description": "API for watiseropderadio",
-  "main": "dibimon.js",
+  "main": "app.js",
   "private": true,
   "scripts": {
     "start": "node app.js"
-  },
-  "dependencies": {
-    "express": "^4.12.3",
-    "knex": "^0.7.6",
-    "pg": "^4.3.0"
   },
   "engines": {
     "node": "~0.10.1"
@@ -24,5 +19,8 @@
     "wieodr"
   ],
   "author": "Adriaan van Rossum",
-  "license": "CC BY-NC 4.0"
+  "license": "CC BY-NC 4.0",
+  "dependencies": {
+    "express": "^4.13.0"
+  }
 }
