@@ -1,3 +1,3 @@
-module.exports = function(app) {
-  app.use('/signup', require('./routes/signup'));
+module.exports = function(server, database) {
+  server.use('/signup', require('./routes/signup')(server, database));
 };
