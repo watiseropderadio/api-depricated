@@ -1,67 +1,59 @@
-var pg = require('pg');
-var express = require('express');
-var app = express();
+/**
+ * app.js
+ *
+ * Use `app.js` to run your app without `sails lift`.
+ * To start the server, run: `node app.js`.
+ *
+ * This is handy in situations where the sails CLI is not relevant or useful.
+ *
+ * For example:
+ *   => `node app.js`
+ *   => `forever start app.js`
+ *   => `node debug app.js`
+ *   => `modulus deploy`
+ *   => `heroku scale`
+ *
+ *
+ * The same command-line arguments are supported, e.g.:
+ * `node app.js --silent --port=80 --prod`
+ */
 
-app.set('database', (process.env.PG_CONNECTION_STRING || false));
-app.set('port', (process.env.PORT || 5000));
-app.use(express.static(__dirname + '/public'));
-app.use(function(req, res, next) {
-  res.removeHeader('X-Powered-By');
-  res.header('Content-Type', 'application/json');
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+// Ensure we're in the project directory, so relative paths work as expected
+// no matter where we actually lift from.
+process.chdir(__dirname);
 
-function sendJson(res, rootName, object) {
-  var json = {};
-  if (Object.keys(object).length) {
-    json[rootName] = object;
-  } else {
-    res.status(404);
-    json[rootName] = [];
-  }
-  res.send(JSON.stringify(json));
-}
-
-var knex = require('knex')({
-  client: 'pg',
-  connection: app.get('database')
-});
-
-app.get('/', function(req, res) {
-  res.send(JSON.stringify({
-    author: 'Adriaan van Rossum',
-    email: 'api@watiseropderadio.nl',
-    website: 'http://watiseropderadio.nl'
-  }));
-});
-
-app.get('/timeline_items', function(req, res) {
-
-  var where = (req.query.radio_id) ? {
-    radio_id: req.query.radio_id
-  } : {};
-
-  knex.select('on_air', 'radio_id', 'song_id')
-    .from('timeline')
-    .where(where)
-    .limit(20)
-    .then(function(rows) {
-      sendJson(res, 'timeline_items', rows);
-    })
-    .catch(function(e) {
-      console.error(e);
-    });
-});
-
-app.listen(app.get('port'), function() {
-
-  if (!app.get('database')) {
-    console.error('PG_CONNECTION_STRING is not available');
-  } else {
-    console.log('PG_CONNECTION_STRING is:', app.get('database'));
+// Ensure a "sails" can be located:
+(function() {
+  var sails;
+  try {
+    sails = require('sails');
+  } catch (e) {
+    console.error('To run an app using `node app.js`, you usually need to have a version of `sails` installed in the same directory as your app.');
+    console.error('To do that, run `npm install sails`');
+    console.error('');
+    console.error('Alternatively, if you have sails installed globally (i.e. you did `npm install -g sails`), you can use `sails lift`.');
+    console.error('When you run `sails lift`, your app will still use a local `./node_modules/sails` dependency if it exists,');
+    console.error('but if it doesn\'t, the app will run with the global sails instead!');
+    return;
   }
 
-  console.log('Node app is running at localhost:' + app.get('port'));
-});
+  // Try to get `rc` dependency
+  var rc;
+  try {
+    rc = require('rc');
+  } catch (e0) {
+    try {
+      rc = require('sails/node_modules/rc');
+    } catch (e1) {
+      console.error('Could not find dependency: `rc`.');
+      console.error('Your `.sailsrc` file(s) will be ignored.');
+      console.error('To resolve this, run:');
+      console.error('npm install rc --save');
+      rc = function () { return {}; };
+    }
+  }
+
+
+  // Start server
+  sails.lift(rc('sails'));
+})();
