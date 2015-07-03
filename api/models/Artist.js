@@ -12,7 +12,9 @@ module.exports = {
     slug: {
       type: 'string',
       unique: true,
-      required: true
+      required: true,
+      alphanumericdashed: true,
+      lowercase: true
     },
     names: {
       type: 'array',

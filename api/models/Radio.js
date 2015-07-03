@@ -12,7 +12,9 @@ module.exports = {
     slug: {
       type: 'string',
       unique: true,
-      required: true
+      required: true,
+      alphanumericdashed: true,
+      lowercase: true
     },
     name: {
       type: 'string',
@@ -27,10 +29,12 @@ module.exports = {
       required: true
     },
     streams: {
-      type: 'array'
+      type: 'array',
+      url: true
     },
     website: {
-      type: 'string'
+      type: 'string',
+      url: true
     },
     plays: {
       collection: 'play',

@@ -11,7 +11,9 @@ module.exports = {
 
     slug: {
       type: 'string',
-      required: true
+      required: true,
+      alphanumericdashed: true,
+      lowercase: true
     },
     titles: {
       type: 'array',

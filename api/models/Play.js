@@ -14,7 +14,7 @@ module.exports = {
     },
     radio: {
       model: 'radio',
-      required: true
+      // required: true // Does not work due https://github.com/balderdashy/sails/issues/2073
     },
     song: {
       model: 'song'
@@ -23,4 +23,5 @@ module.exports = {
       model: 'recording'
     }
   }
+
 };
