@@ -46,4 +46,6 @@ module.exports.routes = {
    *                                                                          *
    ***************************************************************************/
 
+  'POST /plays': 'PlayController.processPlay'
+
 };

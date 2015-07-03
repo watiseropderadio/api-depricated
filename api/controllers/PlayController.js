@@ -19,60 +19,46 @@ function toTitleCase(str) {
 
 module.exports = {
 
-  new: function(req, res) {
-
-    if (req.wantsJSON) {
-      console.log('json');
-    } else {
-      console.log('nooo json');
-    }
-
-    console.log(req.body);
-    return res.json({
-      play: {
-        id: '34oi34oij'
-      }
-    });
-  },
-
   processPlay: function(req, res) {
+    return this.validate(req, res);
+  },
 
-    if (req.wantsJSON) {
-      console.log('json');
-    } else {
-      console.log('nooo json');
+  validate: function(req, res) {
+    var errors = [];
+    var play = req.body.play;
+    if (!play) errors.push('No play as root object specified');
+    if (!play.radioSlug) errors.push('No radioSlug specified');
+    if (!play.artist) errors.push('No artist specified');
+    if (!play.title) errors.push('No title specified');
+    if (errors.length) {
+      return res.badRequest({
+        errors: errors
+      });
     }
+    return this.findRadio(req, res);
+  },
 
-    console.log(req.body);
-    return res.json({
-      play: {
-        id: '34oi34oij'
-      }
+  findRadio: function(req, res) {
+    var play = req.body.play;
+
+    // Find radio based on slug
+    Radio.findOne({
+      slug: play.radioSlug
+    }).exec(function findOneCB(err, radio) {
+      if (!radio) return res.badRequest('Radio with slug "' + play.radioSlug + '" is not found');
+      return this.findArtist(req, res, radio);
+    }.bind(this));
+  },
+
+  findArtist: function(req, res, radio) {
+    var play = {
+      radio: radio.id
+    };
+
+    Play.create(play).exec(function(err, sample) {
+      if (err) return res.serverError(err);
+      res.json(sample);
     });
-  },
-
-  process: function(radioId, artistName, songTitle, timestamp) {
-
-  },
-
-  getArtist: function(artistName) {
-
-  },
-
-  getArtists: function(artistNames) {
-
-  },
-
-  getSong: function(artistIds, songTitle) {
-
-  },
-
-  createPlay: function(radioId, songId, timestamp) {
-
-  },
-
-  getPlay: function(radioId, songId, timestamp) {
-
-  },
+  }
 
 };
