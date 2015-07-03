@@ -33,5 +33,8 @@
     "url": "git://github.com/watiseropderadio/api.git"
   },
   "author": "Adriaan van Rossum",
-  "license": ""
+  "license": "",
+  "devDependencies": {
+    "sails-generate-ember-blueprints": "0.0.9"
+  }
 }
