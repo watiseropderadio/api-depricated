@@ -16,12 +16,12 @@ Example request urls
  * /songs/?title=...&artist_slug=...
 
 
-## /radiostations
+## /radio
 
 Example request urls
 
- * /radiostations
- * /radiostations/?country_code=...
+ * /radio
+ * /radio/?country_code=...
 
 
 # Schema
@@ -38,14 +38,13 @@ recordings
 songs
  - titles (Array)
  - artist_ids (Has Many Artists)
- - song_id (BelongsTo Song)
  - playlist_items (Has Many plays)
 
 artists
  - slug (String)
  - names (Array)
 
-radiostations
+radio
  - name (String)
  - slug (String)
  - country_code (String)
