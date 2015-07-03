@@ -19,7 +19,7 @@ function toTitleCase(str) {
 
 module.exports = {
 
-  processPlay: function(req, res) {
+  new: function(req, res) {
     return this.validate(req, res);
   },
 
