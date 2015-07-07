@@ -45,7 +45,7 @@ artists
  - slug (String)
  - names (Array)
 
-radio
+radios
  - name (String)
  - slug (String)
  - country_code (String)
