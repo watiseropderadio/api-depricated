@@ -41,9 +41,16 @@ module.exports = function notFound(data, options) {
 
   // If the user-agent wants JSON, always respond with JSON
   if (req.wantsJSON) {
+    if (typeof data === 'string') {
+      data = {
+        errors: [{
+          status: '404 Not Found',
+          title: data
+        }]
+      }
+    }
     return res.jsonx(data);
   }
-
   // If second argument is a string, we take that to mean it refers to a view.
   // If it was omitted, use an empty object (`{}`)
   options = (typeof options === 'string') ? {

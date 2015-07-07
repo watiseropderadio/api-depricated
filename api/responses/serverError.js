@@ -36,6 +36,14 @@ module.exports = function serverError(data, options) {
 
   // If the user-agent wants JSON, always respond with JSON
   if (req.wantsJSON) {
+    if (typeof data === 'string') {
+      data = {
+        errors: [{
+          status: '500 Server Error',
+          title: data
+        }]
+      }
+    }
     return res.jsonx(data);
   }
 

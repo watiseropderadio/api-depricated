@@ -36,6 +36,14 @@ module.exports = function forbidden(data, options) {
 
   // If the user-agent wants JSON, always respond with JSON
   if (req.wantsJSON) {
+    if (typeof data === 'string') {
+      data = {
+        errors: [{
+          status: '403 Forbidden',
+          title: data
+        }]
+      }
+    }
     return res.jsonx(data);
   }
 
