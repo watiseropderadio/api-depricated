@@ -16,12 +16,13 @@ Example request urls
  * /songs/?title=...&artist_slug=...
 
 
-## /radio
+## /radios
 
 Example request urls
 
- * /radio
- * /radio/?country_code=...
+ * /radios
+ * /radios/:id
+ * /radios/?country_code=...
 
 
 # Schema
