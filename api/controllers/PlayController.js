@@ -11,6 +11,7 @@ var async = require('async')
 
 var find = require('./../utils/find')
 var returnArtist = require('./../utils/return-artist')
+var returnSong = require('./../utils/return-song')
 
 /**
  * String functions
@@ -39,8 +40,9 @@ module.exports = {
 
     async.waterfall([
 
-        function validate(callback) {
-          // validate the hell out of it
+        function waterfallValidate(callback) {
+
+          // Validate the hell out of it
           var errors = []
           if (!play) errors.push('No play as root object specified')
           if (!play.radioSlug) errors.push('No radioSlug specified')
@@ -50,11 +52,12 @@ module.exports = {
             return callback(errors)
           }
 
-          // pass data through
+          // Pass data through
           callback(null)
         },
-        function findRadio(callback) {
-          // find the radio based on slug
+        function waterfallFindRadio(callback) {
+
+          // Find the radio based on slug
           Radio.findOne({
             slug: play.radioSlug
           }).exec(function findOneCB(error, radio) {
@@ -63,21 +66,22 @@ module.exports = {
             callback(null, radio)
           }.bind(this))
         },
-        function decodePlay(radio, callback) {
-          // decode multiple times so there will be no encoding
+        function waterfallDecodePlay(radio, callback) {
+
+          // Decode multiple times so there will be no encoding
           artist = decode(decode(decode(play.artist)))
           title = decode(decode(decode(play.title)))
 
-          // if there are only capitals, make it title case
+          // If there are only capitals, make it title case
           artist = (allCaps(artist)) ? toTitleCase(artist) : artist
           title = (allCaps(title)) ? toTitleCase(title) : title
 
-          // pass data through
+          // Pass data through
           callback(null, radio, artist, title)
         },
-        function findOrSplitArtist(radio, artist, title, callback) {
+        function waterfallFindOrSplitArtist(radio, artist, title, callback) {
 
-          // check if the whole string as artist (like "Nick & Simon")
+          // Check if the whole string as artist (like "Nick & Simon")
           return Artist.native(function(error, collection) {
             if (error) return console.log(error)
             return collection.find({
@@ -90,47 +94,67 @@ module.exports = {
                 return callback(null, radio, artistResult[0], null, title)
               }
 
-              // split artist name so it will return an array of artists
+              // Split artist name so it will return an array of artists
               var artists = artist.split(/feat\.| feat | ft\. | ft | - | vs\. | vs |featuring\. |featuring | & |, /i)
               callback(null, radio, null, artists, title)
             })
           })
         },
-        function returnArtists(radio, oneArtist, artists, title, callback) {
-          // loop over all artists
+        function waterfallReturnArtists(radio, oneArtist, artists, title, callback) {
+
+          // Loop over all artists
           if (oneArtist) return callback(null, radio, [oneArtist], title)
           var promises = artists.map(function(artist) {
-              return returnArtist(artist)
-            })
-            // make async calls and return artists
+            return returnArtist(artist)
+          })
+
+          // Make async calls and return artists
           RSVP.all(promises).then(function(artists) {
-            return callback(null, radio, artists, title)
+
+            // If there are artist, get the corresponding waterline model
+            if (artists.length > 0) {
+              var ids = []
+              artists.map(function(artist) {
+                var id = artist.id || artist._id
+                ids.push(id)
+              })
+              return Artist.find({
+                id: ids
+              }).exec(function findOneCB(error, artists) {
+                return callback(null, radio, artists, title)
+              })
+            }
+            callback(['returnArtist does not give artists back'])
           }).catch(function(errors) {
             return callback(errors)
           })
         },
-        function returnSong(radio, artists, title, callback) {
-          // kind of the same as with returnArtist
-          return callback(null, radio, artists, title)
+        function waterfallReturnSong(radio, artists, title, callback) {
+
+          // Kind of the same as with returnArtist
+          returnSong(artists, title).then(function(song) {
+            return callback(null, radio, song)
+          }, function(error) {
+            if (!error) return callback(['Error with returnSong'])
+            callback([error])
+          })
         },
-        function returnPlay(radio, artists, title, callback) {
-          // check last x minutes
-          // last x songs
-          // when posted with date, check before 15 and after 15 minutes
-          return callback(null, radio, artists, title)
+        function waterfallReturnPlay(radio, song, callback) {
+
+          // Check last x minutes
+          // Last x songs
+          // When posted with date, check before 15 and after 15 minutes
+          var play = {}
+          return callback(null, play)
         }
       ],
-      function done(errors, radio, artists, title) {
+      function waterfallDone(errors, play) {
         if (errors) {
           return res.badRequest({
             errors: errors
           })
         }
-        res.ok({
-          radio: radio,
-          artists: artists,
-          title: title
-        })
+        res.ok(play)
       })
   }
 }
