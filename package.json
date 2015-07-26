@@ -1,28 +1,23 @@
 {
-  "name": "api",
-  "version": "0.0.1",
-  "description": "API for watiseropderadio",
-  "main": "dibimon.js",
-  "private": true,
-  "scripts": {
-    "start": "node app.js"
-  },
+  "name": "phobosjs-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
   "dependencies": {
-    "express": "^4.12.3",
-    "knex": "^0.7.6",
-    "pg": "^4.3.0"
-  },
-  "engines": {
-    "node": "~0.10.1"
+    "phobosjs": "^0.0.1"
   },
   "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/watiseropderadio/api/"
+    "url": "git+https://github.com/fiiv/phobos.js-example.git"
   },
-  "keywords": [
-    "wieodr"
-  ],
-  "author": "Adriaan van Rossum",
-  "license": "CC BY-NC 4.0"
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fiiv/phobos.js-example/issues"
+  },
+  "homepage": "https://github.com/fiiv/phobos.js-example#readme"
 }
