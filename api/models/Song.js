@@ -15,14 +15,17 @@ module.exports = {
       alphanumericdashed: true,
       lowercase: true
     },
+    title: {
+      type: 'string'
+    },
     titles: {
-      type: 'array',
-      required: true
+      collection: 'songtitle',
+      via: 'song'
     },
     artists: {
       collection: 'artist',
       via: 'songs',
-      required: true
+      // required: true
     },
     plays: {
       collection: 'play',

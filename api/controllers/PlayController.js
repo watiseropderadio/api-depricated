@@ -82,30 +82,25 @@ module.exports = {
         function waterfallFindOrSplitArtist(radio, artist, title, callback) {
 
           // Check if the whole string as artist (like "Nick & Simon")
-          return Artist.native(function(error, collection) {
-            if (error) return console.log(error)
-            return collection.find({
-              names: {
-                '$in': [artist]
-              }
-            }).toArray(function(error, artistResult) {
-              if (error) return console.log(error)
-              if (artistResult.length > 0) {
-                return callback(null, radio, artistResult[0], null, title)
-              }
+          return ArtistName.find({
+            name: artist
+          }).exec(function findOneCB(error, artists) {
+            if (error) return callback(error)
+            if (artists.length > 0) return callback(null, radio, artists[0], null, title)
 
-              // Split artist name so it will return an array of artists
-              var artists = artist.split(/feat\.| feat | ft\. | ft | - | vs\. | vs |featuring\. |featuring | & |, /i)
-              callback(null, radio, null, artists, title)
-            })
+            // Split artist name so it will return an array of artists
+            var artistNames = artist.split(/feat\.| feat | ft\. | ft | - | vs\. | vs |featuring\. |featuring | & |, /i)
+            return callback(null, radio, null, artistNames, title)
           })
         },
-        function waterfallReturnArtists(radio, oneArtist, artists, title, callback) {
+        function waterfallReturnArtists(radio, oneArtist, artistNames, title, callback) {
+
+          // Skip this function when there is already one artist found
+          if (oneArtist) return callback(null, radio, [oneArtist], title)
 
           // Loop over all artists
-          if (oneArtist) return callback(null, radio, [oneArtist], title)
-          var promises = artists.map(function(artist) {
-            return returnArtist(artist)
+          var promises = artistNames.map(function(artistName) {
+            return returnArtist(artistName)
           })
 
           // Make async calls and return artists
@@ -139,13 +134,31 @@ module.exports = {
             callback([error])
           })
         },
+        function waterfallCheckIfPlayExists(radio, artists, title, callback) {
+
+          // Kind of the same as with returnArtist
+          returnSong(artists, title).then(function(song) {
+            return callback(null, radio, song)
+          }, function(error) {
+            if (!error) return callback(['Error with returnSong'])
+            callback([error])
+          })
+        },
         function waterfallReturnPlay(radio, song, callback) {
 
-          // Check last x minutes
-          // Last x songs
-          // When posted with date, check before 15 and after 15 minutes
-          var play = {}
-          return callback(null, play)
+          var date = new Date()
+          return Play.create({
+            radio: radio,
+            song: song,
+            playedAt: date
+          }).exec(function createPlay(error, play) {
+            if (error) return callback(error)
+
+            // Check last x minutes
+            // Last x songs
+            // When posted with date, check before 15 and after 15 minutes
+            return callback(null, play)
+          })
         }
       ],
       function waterfallDone(errors, play) {

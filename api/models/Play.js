@@ -9,8 +9,8 @@ module.exports = {
 
   attributes: {
 
-    onAir: {
-      type: 'date'
+    playedAt: {
+      type: 'datetime'
     },
     radio: {
       model: 'radio',

@@ -8,7 +8,6 @@
 module.exports = {
 
   attributes: {
-
     slug: {
       type: 'string',
       unique: true,
@@ -16,9 +15,12 @@ module.exports = {
       alphanumericdashed: true,
       lowercase: true
     },
+    name: {
+      type: 'string'
+    },
     names: {
-      type: 'array',
-      required: true
+      collection: 'artistname',
+      via: 'artist'
     },
     songs: {
       collection: 'song',
