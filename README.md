@@ -32,7 +32,7 @@ Example request urls
 
 
 ## Schema
-The schema as defined in [api/models](https://github.com/watiseropderadio/api/tree/master/api/models)
+The schema used by *Sails.js* as defined in [api/models](https://github.com/watiseropderadio/api/tree/master/api/models).
 
 Play
  - `playedAt` *(Datetime)*
