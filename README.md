@@ -1,4 +1,6 @@
 # Watiseropderadio API
+**Warning: this project is still a work in progress**
+
 Some people think that *open-source* will kill their business. We don't. We have build this API on top of other *open-source* software like [Node.js](https://nodejs.org), [Express](http://expressjs.com/), [Sails.js](http://sailsjs.org/) and [dokku](http://progrium.viewdocs.io/dokku/). 
 
 ## Usage
