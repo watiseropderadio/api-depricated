@@ -64,7 +64,7 @@ module.exports = {
             if (error) return callback('Error with radio find function for slug ' + play.radioSlug)
             if (!radio) return callback('No radio found with slug ' + play.radioSlug)
             callback(null, radio)
-          }.bind(this))
+          })
         },
         function waterfallDecodePlay(radio, callback) {
 
