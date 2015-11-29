@@ -8,6 +8,7 @@
 var decode = require('ent/decode')
 var RSVP = require('rsvp')
 var async = require('async')
+var moment = require('moment-timezone')
 
 var find = require('./../utils/find')
 var returnArtist = require('./../utils/return-artist')
@@ -37,6 +38,7 @@ module.exports = {
 
   new: function(req, res) {
     var play = req.body.play
+    var startDatetime = null
 
     async.waterfall([
 
@@ -45,12 +47,16 @@ module.exports = {
           // Validate the hell out of it
           var errors = []
           if (!play) errors.push('No play as root object specified')
-          if (!play.radioSlug) errors.push('No radioSlug specified')
-          if (!play.artist) errors.push('No artist specified')
-          if (!play.title) errors.push('No title specified')
+          if (!play.radioSlug) errors.push('No radioSlug (string) specified')
+          if (!play.artist) errors.push('No artist (string) specified')
+          if (!play.title) errors.push('No title (string) specified')
+          if (!play.timezone) errors.push('No timezone (like Europe/Amsterdam) specified')
+          if (play.date && !play.exact) errors.push('Also specify exact (boolean) when you post datetime (iso 8601)')
           if (errors.length) {
             return callback(errors)
           }
+
+          startDatetime = moment().tz(play.timezone)
 
           // Pass data through
           callback(null)
@@ -134,30 +140,78 @@ module.exports = {
             callback([error])
           })
         },
-        function waterfallCheckIfPlayExists(radio, artists, title, callback) {
+        function waterfallPlayExactExists(radio, song, callback) {
+          // If there is an exact date, go test if is exists
+          if (!play.date || (play.date && play.exact !== true)) return callback(null, radio, song)
 
-          // Kind of the same as with returnArtist
-          returnSong(artists, title).then(function(song) {
-            return callback(null, radio, song)
-          }, function(error) {
-            if (!error) return callback(['Error with returnSong'])
-            callback([error])
+          var date = moment(play.date).tz(play.timezone).format()
+          var findOptions = {
+            radio: radio.id,
+            song: song.id,
+            playedAt: new Date(date)
+          }
+          Play.findOne(findOptions).exec(function findExistingSong(error, result) {
+            if (error) return callback(error)
+            if (result) return callback('This song with this exact time is already added')
+            callback(null, radio, song)
+          })
+        },
+        function waterfallFindCloseInTime(radio, song, callback) {
+          if (!play.date) return callback(null, radio, song)
+
+          var begin = moment(play.date).tz(play.timezone).subtract(15, 'minutes').format()
+          var end = moment(play.date).tz(play.timezone).add(15, 'minutes').format()
+
+          var queryObj = {
+            radio: radio.id,
+            song: song.id,
+            playedAt: {
+              '>=': new Date(begin),
+              '<': new Date(end)
+            }
+          }
+          Play.findOne(queryObj).exec(function(error, play) {
+            if (error) return callback(error)
+            if (play) return callback('This song is already added in 30 minutes around that time')
+            callback(null, radio, song)
+          });
+        },
+        function waterfallPlayInLastItems(radio, song, callback) {
+          Play.find({
+            radio: radio.id
+          }).limit(20).exec(function findExistingSongInLastItems(error, result) {
+            if (error) return callback(error)
+            if (!result) return callback(null, radio, song)
+            var songFound = false
+            for (var i = result.length - 1; i >= 0; i--) {
+              var songId = result[i].song
+              if (songId === song.id) {
+                songFound = true
+              }
+            }
+            if (songFound) return callback('This song is already added in the last 20 radio items')
+            callback(null, radio, song)
           })
         },
         function waterfallReturnPlay(radio, song, callback) {
+
+          var exact = !!play.exact
+
+          if (play.date) {
+            date = play.date
+          } else {
+            date = startDatetime.format()
+          }
 
           var date = new Date()
           return Play.create({
             radio: radio,
             song: song,
+            exact: exact,
             playedAt: date
           }).exec(function createPlay(error, play) {
             if (error) return callback(error)
-
-            // Check last x minutes
-            // Last x songs
-            // When posted with date, check before 15 and after 15 minutes
-            return callback(null, play)
+            callback(null, play)
           })
         }
       ],

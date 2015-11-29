@@ -31,9 +31,11 @@ module.exports = function(recordOptions) {
 
             // Do this for finding the song because we have artists ids here
             if (whereArtists && recordNames.length > 0) {
-              // Loop over results to check if
+
+              // Loop over results to check if they have the same artists
               for (var i = recordNames.length - 1; i >= 0; i--) {
                 var recordId = recordNames[i][relationName]
+
                 recordCollection.find({
                   id: recordId
                 }).populate('artists', {
@@ -61,7 +63,6 @@ module.exports = function(recordOptions) {
                     }
                     if (match) return callback(null, match)
                     return callback(null, null)
-                    console.log('RSVP artists', artists)
                   }).catch(function(reason) {
                     return callback(reason)
                   })

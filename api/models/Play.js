@@ -12,6 +12,9 @@ module.exports = {
     playedAt: {
       type: 'datetime'
     },
+    exact: {
+      type: 'boolean'
+    },
     radio: {
       model: 'radio',
       // required: true // Does not work due https://github.com/balderdashy/sails/issues/2073
