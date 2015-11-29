@@ -163,6 +163,9 @@ module.exports = {
       ],
       function waterfallDone(errors, play) {
         if (errors) {
+          if (typeof errors !== 'object') {
+            errors = [errors]
+          }
           return res.badRequest({
             errors: errors
           })
