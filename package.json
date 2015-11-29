@@ -5,7 +5,7 @@
   "description": "API for watiseropderadio",
   "keywords": [],
   "engines": {
-    "node": "5.x",
+    "node": "5.x"
   },
   "dependencies": {
     "async": "^1.4.0",
