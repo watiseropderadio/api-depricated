@@ -74,14 +74,9 @@ module.exports.connections = {
    *                                                                          *
    *                                                                          *
    ***************************************************************************/
-  dokkuPostgresDevelopment: {
+  dokkuPostgres: {
     adapter: 'sails-postgresql',
-    url: process.env.POSTGRESQL_URL_DEVELOPMENT
-  },
-
-  dokkuPostgresProduction: {
-    adapter: 'sails-postgresql',
-    url: process.env.POSTGRESQL_URL_PRODUCTION
+    url: process.env.DATABASE_URL
   }
 
   /***************************************************************************
