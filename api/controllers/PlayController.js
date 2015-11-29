@@ -189,7 +189,7 @@ module.exports = {
                 songFound = true
               }
             }
-            if (songFound) return callback('This song is already added in the last 20 radio items')
+            if (songFound) return callback('This song is already added in the last 20 items of ' + radio.name)
             callback(null, radio, song)
           })
         },
