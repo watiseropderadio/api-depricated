@@ -50,7 +50,7 @@ Song
  - `titles` *(Has Many SongTitles)*
  - `artists` *(Has Many Artists)*
  - `plays` *(Has Many Plays)*
- - 
+
 SongTitle
  - `title` *(String)*
  - `song` *(BelongsTo Song)*
