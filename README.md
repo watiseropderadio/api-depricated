@@ -32,28 +32,44 @@ Example request urls
 
 
 ## Schema
+The schema as defined in [api/models](https://github.com/watiseropderadio/api/tree/master/api/models)
 
-plays
- - datetime (Date)
- - radio_id (BelongsTo Radio)
- - song_id (BelongsTo Song)
- - recording_id (BelongsTo Recording)
+Play
+ - `playedAt` *(Datetime)*
+ - `radio` *(BelongsTo Radio)*
+ - `song` *(BelongsTo Song)*
+ - `recording` *(BelongsTo Recording)*
 
-recordings
- - audio_url (String)
+Recording
+ - `url` *(String)*
+ - `plays` *(Has Many Plays)*
 
-songs
- - titles (Array)
- - artist_ids (Has Many Artists)
- - playlist_items (Has Many plays)
+Song
+ - `slug` *(String)*
+ - `title` *(String)*
+ - `titles` *(Has Many SongTitles)*
+ - `artists` *(Has Many Artists)*
+ - `plays` *(Has Many Plays)*
+ - 
+SongTitle
+ - `title` *(String)*
+ - `song` *(BelongsTo Song)*
 
-artists
- - slug (String)
- - names (Array)
+Artist
+ - `slug` *(String)*
+ - `name` *(String)*
+ - `names` *(Has Many ArtistNames)*
+ - `songs` *(Has Many Songs)*
 
-radios
- - name (String)
- - slug (String)
- - country_code (String)
- - stream_urls (Array)
- - website_url (String)
+ArtistName
+ - `title` *(String)*
+ - `artist` *(BelongsTo Artist)*
+
+Radio
+ - `name` *(String)*
+ - `nameShort` *(String)*
+ - `slug` *(String)*
+ - `countryCode` *(String)*
+ - `streamUrl` *(String)*
+ - `website` *(String)*
+ - `plays` *(Has Many Plays)*
