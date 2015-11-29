@@ -28,8 +28,8 @@ module.exports = {
       type: 'string',
       required: true
     },
-    streams: {
-      type: 'array',
+    streamUrl: {
+      type: 'string',
       url: true
     },
     website: {
