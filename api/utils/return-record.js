@@ -29,6 +29,7 @@ module.exports = function(recordOptions) {
           recordNameCollection.find(nameOptions).exec(function findRecordByName(error, recordNames) {
             if (error) return callback(error)
 
+            // Do this for finding the song because we have artists ids here
             if (whereArtists && recordNames.length > 0) {
               // Loop over results to check if
               for (var i = recordNames.length - 1; i >= 0; i--) {
