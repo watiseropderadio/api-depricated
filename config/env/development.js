@@ -22,7 +22,7 @@ module.exports = {
   },
 
   log: {
-    level: 'warn'
+    level: 'info'
   }
 
 };
