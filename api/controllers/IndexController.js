@@ -14,7 +14,7 @@ module.exports = {
       author: 'Adriaan van Rossum',
       contact: 'api@watiseropderadio.nl',
       repository: 'https://github.com/watiseropderadio/api',
-      version: '1.0.1'
+      version: '1.0.2'
     });
   }
 
