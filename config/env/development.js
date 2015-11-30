@@ -19,6 +19,10 @@ module.exports = {
 
   models: {
     connection: 'dokkuPostgres'
+  },
+
+  log: {
+    level: 'warn'
   }
 
 };

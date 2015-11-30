@@ -12,7 +12,9 @@ module.exports = {
       name: 'API',
       description: 'API for serving the data for http://watiseropderadio.nl',
       author: 'Adriaan van Rossum',
-      contact: 'api@watiseropderadio.nl'
+      contact: 'api@watiseropderadio.nl',
+      repository: 'https://github.com/watiseropderadio/api',
+      version: '1.0.2'
     });
   }
 
