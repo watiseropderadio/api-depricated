@@ -39,15 +39,17 @@ module.exports = function notFound(data, options) {
     data = undefined;
   }
 
-  // Always return JSON
+  var error = {
+    status: '404',
+    title: 'This resource is not found'
+  };
+
   if (typeof data === 'string') {
-    data = {
-      errors: [{
-        status: '404',
-        title: data
-      }]
-    }
+    error.detail = data;
   }
-  return res.jsonx(data);
+
+  return res.jsonx({
+    errors: [error]
+  });
 
 };

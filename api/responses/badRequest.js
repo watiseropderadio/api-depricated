@@ -37,15 +37,17 @@ module.exports = function badRequest(data, options) {
     data = undefined;
   }
 
-  // Always return JSON
+  var error = {
+    status: '400',
+    title: 'Bad request, you can probably fix this yourself'
+  };
+
   if (typeof data === 'string') {
-    data = {
-      errors: [{
-        status: '400',
-        title: data
-      }]
-    }
+    error.detail = data;
   }
-  return res.jsonx(data);
+
+  return res.jsonx({
+    errors: [error]
+  });
 
 };

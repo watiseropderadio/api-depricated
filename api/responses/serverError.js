@@ -34,15 +34,17 @@ module.exports = function serverError(data, options) {
     data = undefined;
   }
 
-  // Always return JSON
+  var error = {
+    status: '500',
+    title: 'This is a server error. We messed up at our side'
+  };
+
   if (typeof data === 'string') {
-    data = {
-      errors: [{
-        status: '500',
-        title: data
-      }]
-    }
+    error.detail = data;
   }
-  return res.jsonx(data);
+
+  return res.jsonx({
+    errors: [error]
+  });
 
 };
