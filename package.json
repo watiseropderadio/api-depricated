@@ -1,7 +1,7 @@
 {
   "name": "wieodr",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "API for watiseropderadio",
   "keywords": [],
   "engines": {
@@ -30,6 +30,7 @@
     "rc": "^1.1.5",
     "rsvp": "^3.0.18",
     "sails": "~0.11.3",
+    "sails-disk": "~0.10.0",
     "sails-generate-ember-blueprints": "0.0.9",
     "sails-postgresql": "^0.10.17",
     "string": "^3.3.0"
