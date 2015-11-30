@@ -25,7 +25,7 @@ module.exports.policies = {
    *                                                                          *
    ***************************************************************************/
 
-  '*': 'forbidden'
+  '*': 'forbidden',
 
   /***************************************************************************
    *                                                                          *
@@ -47,4 +47,36 @@ module.exports.policies = {
   // before letting any users feed our rabbits
   // feed : ['isNiceToAnimals', 'hasRabbitFood']
   // }
+
+  ArtistController: {
+    '*': 'forbidden',
+    find: true,
+  },
+
+  IndexController: {
+    '*': 'forbidden',
+    'get': true,
+  },
+
+  PlayController: {
+    '*': 'forbidden',
+    'new': true,
+    find: true,
+  },
+
+  RadioController: {
+    '*': 'forbidden',
+    find: true,
+  },
+
+  RecordingController: {
+    '*': 'forbidden',
+    find: true,
+  },
+
+  SongController: {
+    '*': 'forbidden',
+    find: true,
+  },
+
 };
