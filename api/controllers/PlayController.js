@@ -53,13 +53,15 @@ module.exports = {
           if (!play.date && play.time) errors.push('Specify a \'date\' (ISO 8601) instead of \'time\'')
           if (!play.date && play.datetime) errors.push('Specify a \'date\' (ISO 8601) instead of \'datetime\'')
           if (!play.date && !play.timezone) errors.push('Specify a \'timezone\' (like \'Europe/Amsterdam\') when not posting a \'date\'')
-          if (play.date && moment(play.date, moment.ISO_8601).isValid()) errors.push('Specify a valid \'date\' (ISO 8601)')
-          if (play.date && _isUndefined(play.exact)) errors.push('Specify \'exact\' (boolean) when posting \'date\'')
+          if (play.date && !moment(play.date, moment.ISO_8601).isValid()) errors.push('Specify a valid \'date\' (ISO 8601)')
+          if (play.date && _.isUndefined(play.exact)) errors.push('Specify \'exact\' (boolean) when posting \'date\'')
           if (errors.length) {
             return callback(errors)
           }
 
-          startDatetime = moment().tz(play.timezone)
+          if (play.timezone) {
+            startDatetime = moment().tz(play.timezone)
+          }
 
           // Pass data through
           callback(null)
