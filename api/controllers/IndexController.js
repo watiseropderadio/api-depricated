@@ -7,14 +7,14 @@
 
 module.exports = {
 
-  get: function(req, res) {
+  find: function(req, res) {
     return res.json({
       name: 'API',
       description: 'API for serving the data for http://watiseropderadio.nl',
       author: 'Adriaan van Rossum',
       contact: 'api@watiseropderadio.nl',
       repository: 'https://github.com/watiseropderadio/api',
-      version: '1.0.3'
+      version: '1.0.4'
     });
   }
 

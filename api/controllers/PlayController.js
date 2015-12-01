@@ -36,7 +36,7 @@ function toTitleCase(str) {
 
 module.exports = {
 
-  new: function(req, res) {
+  create: function(req, res) {
     var play = req.body.play
     var startDatetime = null
 
@@ -46,17 +46,22 @@ module.exports = {
 
           // Validate the hell out of it
           var errors = []
-          if (!play) errors.push('No play as root object specified')
-          if (!play.radioSlug) errors.push('No radioSlug (string) specified')
-          if (!play.artist) errors.push('No artist (string) specified')
-          if (!play.title) errors.push('No title (string) specified')
-          if (!play.timezone) errors.push('No timezone (like Europe/Amsterdam) specified')
-          if (play.date && !play.exact) errors.push('Also specify exact (boolean) when you post datetime (iso 8601)')
+          if (!play) errors.push('Specify \'play\' as root object')
+          if (!play.radioSlug) errors.push('Specify a \'radioSlug\' (string)')
+          if (!play.artist) errors.push('Specify an \'artist\' (string)')
+          if (!play.title) errors.push('Specify a \'title\' (string)')
+          if (!play.date && play.time) errors.push('Specify a \'date\' (ISO 8601) instead of \'time\'')
+          if (!play.date && play.datetime) errors.push('Specify a \'date\' (ISO 8601) instead of \'datetime\'')
+          if (!play.date && !play.timezone) errors.push('Specify a \'timezone\' (like \'Europe/Amsterdam\') when not posting a \'date\'')
+          if (play.date && !moment(play.date, moment.ISO_8601).isValid()) errors.push('Specify a valid \'date\' (ISO 8601)')
+          if (play.date && _.isUndefined(play.exact)) errors.push('Specify \'exact\' (boolean) when posting \'date\'')
           if (errors.length) {
             return callback(errors)
           }
 
-          startDatetime = moment().tz(play.timezone)
+          if (play.timezone) {
+            startDatetime = moment().tz(play.timezone)
+          }
 
           // Pass data through
           callback(null)
@@ -144,7 +149,7 @@ module.exports = {
           // If there is an exact date, go test if is exists
           if (!play.date || (play.date && play.exact !== true)) return callback(null, radio, song)
 
-          var date = moment(play.date).tz(play.timezone).format()
+          var date = moment(play.date).format()
           var findOptions = {
             radio: radio.id,
             song: song.id,
@@ -159,8 +164,8 @@ module.exports = {
         function waterfallFindCloseInTime(radio, song, callback) {
           if (!play.date) return callback(null, radio, song)
 
-          var begin = moment(play.date).tz(play.timezone).subtract(15, 'minutes').format()
-          var end = moment(play.date).tz(play.timezone).add(15, 'minutes').format()
+          var begin = moment(play.date).subtract(15, 'minutes').format()
+          var end = moment(play.date).add(15, 'minutes').format()
 
           var queryObj = {
             radio: radio.id,
@@ -220,9 +225,7 @@ module.exports = {
           if (typeof errors !== 'object') {
             errors = [errors]
           }
-          return res.badRequest({
-            errors: errors
-          })
+          return res.badRequest(errors)
         }
         res.ok(play)
       })
