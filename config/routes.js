@@ -47,6 +47,6 @@ module.exports.routes = {
    ***************************************************************************/
 
   // 'POST /plays': 'PlayController.create',
-  // 'GET /': 'IndexController.find'
+  'GET /': 'IndexController.find'
 
 };
