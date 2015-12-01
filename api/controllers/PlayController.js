@@ -147,7 +147,7 @@ module.exports = {
           // If there is an exact date, go test if is exists
           if (!play.date || (play.date && play.exact !== true)) return callback(null, radio, song)
 
-          var date = moment(play.date).tz(play.timezone).format()
+          var date = moment(play.date).format()
           var findOptions = {
             radio: radio.id,
             song: song.id,
@@ -162,8 +162,8 @@ module.exports = {
         function waterfallFindCloseInTime(radio, song, callback) {
           if (!play.date) return callback(null, radio, song)
 
-          var begin = moment(play.date).tz(play.timezone).subtract(15, 'minutes').format()
-          var end = moment(play.date).tz(play.timezone).add(15, 'minutes').format()
+          var begin = moment(play.date).subtract(15, 'minutes').format()
+          var end = moment(play.date).add(15, 'minutes').format()
 
           var queryObj = {
             radio: radio.id,
