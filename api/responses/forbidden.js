@@ -36,7 +36,7 @@ module.exports = function forbidden(data, options) {
 
   var error = {
     status: '403',
-    title: 'You are not allowed to view this resource'
+    title: 'You are not allowed to run this action at this resource'
   };
 
   if (typeof data === 'string') {
