@@ -51,32 +51,39 @@ module.exports.policies = {
   ArtistController: {
     '*': 'forbidden',
     find: true,
+    findOne: true,
   },
 
   IndexController: {
     '*': 'forbidden',
-    'get': true,
+    find: true,
+    findOne: true,
   },
 
   PlayController: {
     '*': 'forbidden',
-    'new': true,
+    create: true,
     find: true,
+    findOne: true,
   },
 
   RadioController: {
     '*': 'forbidden',
+    create: true,
     find: true,
+    findOne: true,
   },
 
   RecordingController: {
     '*': 'forbidden',
     find: true,
+    findOne: true,
   },
 
   SongController: {
     '*': 'forbidden',
     find: true,
+    findOne: true,
   },
 
 };

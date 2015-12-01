@@ -36,7 +36,7 @@ function toTitleCase(str) {
 
 module.exports = {
 
-  new: function(req, res) {
+  create: function(req, res) {
     var play = req.body.play
     var startDatetime = null
 
