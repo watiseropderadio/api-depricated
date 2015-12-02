@@ -29,44 +29,5 @@ Example request urls
  * `/radios/:id`
 
 ## Schema
+
 The schema used by *Sails.js* as defined in [api/models/*.js](https://github.com/watiseropderadio/api/tree/master/api/models).
-
-Play
- - `playedAt` *(Datetime)*
- - `radio` *(BelongsTo Radio)*
- - `song` *(BelongsTo Song)*
- - `recording` *(BelongsTo Recording)*
-
-Recording
- - `url` *(String)*
- - `plays` *(Has Many Plays)*
-
-Song
- - `slug` *(String)*
- - `title` *(String)*
- - `titles` *(Has Many SongTitles)*
- - `artists` *(Has Many Artists)*
- - `plays` *(Has Many Plays)*
-
-SongTitle
- - `title` *(String)*
- - `song` *(BelongsTo Song)*
-
-Artist
- - `slug` *(String)*
- - `name` *(String)*
- - `names` *(Has Many ArtistNames)*
- - `songs` *(Has Many Songs)*
-
-ArtistName
- - `title` *(String)*
- - `artist` *(BelongsTo Artist)*
-
-Radio
- - `name` *(String)*
- - `nameShort` *(String)*
- - `slug` *(String)*
- - `countryCode` *(String)*
- - `streamUrl` *(String)*
- - `website` *(String)*
- - `plays` *(Has Many Plays)*
