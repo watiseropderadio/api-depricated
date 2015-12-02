@@ -31,14 +31,27 @@ module.exports = function badRequest(data, options) {
   } else sails.log.verbose('Sending 400 ("Bad Request") response')
 
   var response = null
+  var responses = []
+
   var error = {
     status: '400',
     title: 'Bad request, you can probably fix this yourself'
   }
 
-  if (_.isArray(data)) {
-
-    var responses = []
+  if (data && data.code === 'E_VALIDATION' && data.invalidAttributes) {
+    _.each(data.invalidAttributes, function(value, model) {
+      _.each(value, function(object) {
+        if (_.isString(object.message)) {
+          responses.push({
+            status: '400',
+            title: 'Wrong input on field ' + model,
+            detail: object.message.split('"').join("'").split('`').join("'")
+          })
+        }
+      })
+    })
+    response = responses
+  } else if (_.isArray(data)) {
     _.each(data, function(element) {
       responses.push({
         status: '400',
@@ -47,9 +60,8 @@ module.exports = function badRequest(data, options) {
       })
     })
     response = responses
-
   } else if (!_.isUndefined(data)) {
-    error.detail = data;
+    error.detail = data
     response = [error]
   } else {
     response = [error]
