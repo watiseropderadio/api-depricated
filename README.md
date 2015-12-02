@@ -12,16 +12,13 @@ If you want to use this API, please get in contact with us. We have contact opti
 
 Example request urls
 
- * `/plays/?radio_id=...`
- * `/plays/?radio_slug=...`
-
+ * `/radio/:id/plays`
 
 ### /songs
 
 Example request urls
 
  * `/songs/:id`
- * `/songs/?title=...&artist_slug=...`
 
 
 ### /radios
@@ -30,8 +27,6 @@ Example request urls
 
  * `/radios`
  * `/radios/:id`
- * `/radios/?country_code=...`
-
 
 ## Schema
 The schema used by *Sails.js* as defined in [api/models/*.js](https://github.com/watiseropderadio/api/tree/master/api/models).
