@@ -61,7 +61,7 @@ module.exports = function badRequest(data, options) {
     })
     response = responses
   } else if (!_.isUndefined(data)) {
-    error.detail = data;
+    error.detail = data
     response = [error]
   } else {
     response = [error]
