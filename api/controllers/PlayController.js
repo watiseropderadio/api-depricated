@@ -214,7 +214,6 @@ module.exports = {
             date = startDatetime.format()
           }
 
-          var date = new Date()
           return Play.create({
             radio: radio,
             song: song,
