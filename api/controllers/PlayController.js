@@ -154,6 +154,7 @@ module.exports = {
           })
         },
         function waterfallPlayExactExists(radio, song, callback) {
+
           // If there is an exact date, go test if is exists
           if (!play.date || (play.date && play.exact !== true)) return callback(null, radio, song)
 
@@ -163,9 +164,10 @@ module.exports = {
             song: song.id,
             playedAt: new Date(date)
           }
+
           Play.findOne(findOptions).exec(function findExistingSong(error, result) {
             if (error) return callback(error)
-            if (result) return callback('This song with this exact time is already added')
+            if (result) return callback('This song is already added')
             callback(null, radio, song)
           })
         },
@@ -185,9 +187,9 @@ module.exports = {
           }
           Play.findOne(queryObj).exec(function(error, play) {
             if (error) return callback(error)
-            if (play) return callback('This song is already added in 30 minutes around that time')
+            if (play) return callback('This song is already added around that time')
             callback(null, radio, song)
-          });
+          })
         },
         function waterfallPlayInLastItems(radio, song, callback) {
           Play.find({
