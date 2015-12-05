@@ -59,6 +59,14 @@ module.exports = {
             return callback(errors)
           }
 
+          if (play.exact) {
+            if (play.exact === 'true') {
+              play.exact = true
+            } else if (play.exact === 'false') {
+              play.exact = false
+            }
+          }
+
           if (play.timezone) {
             startDatetime = moment().tz(play.timezone)
           }
@@ -200,8 +208,6 @@ module.exports = {
         },
         function waterfallReturnPlay(radio, song, callback) {
 
-          var exact = !!play.exact
-
           if (play.date) {
             date = play.date
           } else {
@@ -212,7 +218,7 @@ module.exports = {
           return Play.create({
             radio: radio,
             song: song,
-            exact: exact,
+            exact: play.exact,
             playedAt: date
           }).exec(function createPlay(error, play) {
             if (error) return callback(error)
