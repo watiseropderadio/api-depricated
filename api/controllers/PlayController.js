@@ -59,6 +59,14 @@ module.exports = {
             return callback(errors)
           }
 
+          if (play.exact) {
+            if (play.exact === 'true') {
+              play.exact = true
+            } else if (play.exact === 'false') {
+              play.exact = false
+            }
+          }
+
           if (play.timezone) {
             startDatetime = moment().tz(play.timezone)
           }
@@ -146,6 +154,7 @@ module.exports = {
           })
         },
         function waterfallPlayExactExists(radio, song, callback) {
+
           // If there is an exact date, go test if is exists
           if (!play.date || (play.date && play.exact !== true)) return callback(null, radio, song)
 
@@ -155,9 +164,10 @@ module.exports = {
             song: song.id,
             playedAt: new Date(date)
           }
+
           Play.findOne(findOptions).exec(function findExistingSong(error, result) {
             if (error) return callback(error)
-            if (result) return callback('This song with this exact time is already added')
+            if (result) return callback('This song is already added')
             callback(null, radio, song)
           })
         },
@@ -177,9 +187,9 @@ module.exports = {
           }
           Play.findOne(queryObj).exec(function(error, play) {
             if (error) return callback(error)
-            if (play) return callback('This song is already added in 30 minutes around that time')
+            if (play) return callback('This song is already added around that time')
             callback(null, radio, song)
-          });
+          })
         },
         function waterfallPlayInLastItems(radio, song, callback) {
           Play.find({
@@ -200,19 +210,16 @@ module.exports = {
         },
         function waterfallReturnPlay(radio, song, callback) {
 
-          var exact = !!play.exact
-
           if (play.date) {
             date = play.date
           } else {
             date = startDatetime.format()
           }
 
-          var date = new Date()
           return Play.create({
             radio: radio,
             song: song,
-            exact: exact,
+            exact: play.exact,
             playedAt: date
           }).exec(function createPlay(error, play) {
             if (error) return callback(error)
