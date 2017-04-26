@@ -1,24 +1,29 @@
 {
   "name": "api",
   "version": "0.0.1",
-  "description": "API for watiseropderadio",
-  "main": "app.js",
+  "description": "API for watiseropderadio.nl",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "lux serve",
+    "test": "lux test"
   },
-  "dependencies": {
-  },
-  "engines": {
-  },
-  "devDependencies": {},
+  "author": "Adriaan van Rossum",
+  "license": "CC BY-NC 4.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/watiseropderadio/api/"
   },
+  "dependencies": {
+    "babel-core": "6.17.0",
+    "babel-preset-lux": "2.0.1",
+    "knex": "0.12.6",
+    "lux-framework": "1.1.7",
+    "sqlite3": "3.1.8"
+  },
   "keywords": [
     "wieodr"
   ],
-  "author": "Adriaan van Rossum",
-  "license": "CC BY-NC 4.0"
+  "engines": {
+    "node": ">= 6.0"
+  }
 }
