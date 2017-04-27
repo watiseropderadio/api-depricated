@@ -4,7 +4,9 @@ class SongsController extends Controller {
   params = [
     'play',
     'slug',
-    'title'
+    'title',
+    'songTitle',
+    'artistSong'
   ];
 }
 

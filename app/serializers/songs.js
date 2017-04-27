@@ -7,7 +7,9 @@ class SongsSerializer extends Serializer {
   ];
 
   hasMany = [
-    'play'
+    'play',
+    'songTitle',
+    'artistSong'
   ];
 }
 
