@@ -1,9 +1,9 @@
 import { Serializer } from 'lux-framework';
 
 class ArtistsSerializer extends Serializer {
-      hasMany = [
-    'artistSong',
-    'artistName'
+  hasMany = [
+    'artistSongs',
+    'artistNames'
   ];
 }
 
