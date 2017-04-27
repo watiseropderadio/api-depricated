@@ -9,17 +9,15 @@ class PlaysController extends Controller {
   ];
 
   // This returns empty objects in an array
-  tralala() {
+  test1() {
     return Play.where({
       exact: false
     });
   };
 
   // This throws "TypeError: Cannot convert undefined or null to object"
-  tralala(request, response) {
-    return super.index(request, response).where({
-      exact: true
-    });
+  test2(request, response) {
+    return super.index(request, response);
   };
 }
 
