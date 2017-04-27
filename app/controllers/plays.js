@@ -8,6 +8,15 @@ class PlaysController extends Controller {
     'exact'
   ];
 
+  beforeAction = [
+    (request, response) => {
+      const { action } = request;
+      if (['show', 'index'].indexOf(action) > -1) {
+        request.params.include = 'song';
+      }
+    }
+  ];
+
   // This returns empty objects in an array
   test1() {
     return Play.where({
