@@ -5,6 +5,7 @@ export default async function addCopyright(request, response, payload) {
     return {
       ...payload,
       meta: {
+        owner: 'Adriaan van Rossum',
         copyright: `${new Date().getFullYear()} (c) watiseropderadio.nl`,
         contact: 'data' + '@' + 'watiseropderadio' + '.' + 'nl'
       }
