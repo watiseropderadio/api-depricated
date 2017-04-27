@@ -17,7 +17,7 @@ class PlaysController extends Controller {
 
   // This throws "TypeError: Cannot convert undefined or null to object"
   test2(request, response) {
-    return super.index(request, response);
+    return this.index(request, response);
   };
 }
 

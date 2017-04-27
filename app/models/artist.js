@@ -2,11 +2,11 @@ import { Model } from 'lux-framework';
 
 class Artist extends Model {
   static hasMany = {
-    artistSong: {
+    artistSongs: {
       inverse: 'artist'
     },
 
-    artistName: {
+    artistNames: {
       inverse: 'artist'
     }
   };

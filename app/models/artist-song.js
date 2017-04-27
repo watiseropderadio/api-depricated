@@ -3,11 +3,11 @@ import { Model } from 'lux-framework';
 class ArtistSong extends Model {
   static belongsTo = {
     song: {
-      inverse: 'artistSong'
+      inverse: 'artistSongs'
     },
 
     artist: {
-      inverse: 'artistSong'
+      inverse: 'artistSongs'
     }
   };
 }
